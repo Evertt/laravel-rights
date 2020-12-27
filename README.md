@@ -38,9 +38,25 @@ class Post extends Model
 {
     public function scopeOwnedByAuthUser(Builder $builder)
     {
-        $builder->where('user_id', Auth::user()->id);
+        $builder->where('user_id', Auth::id());
     }
 }
 ```
 
 Then I want to make it possible to define a `condition` that uses that scope.
+
+I'm leaving the following code snippet as a note for myself:
+
+```php
+use Illuminate\Support\Str;
+
+collect(get_class_methods(App\Models\Post::class))
+  ->filter(
+    fn ($method) => Str::startsWith($method, 'scope')
+  )
+  ->map(
+    fn ($method) => Str::snake(substr($method, 5), ' ')
+  );
+
+// ^ that produces ["owned by logged in user"]
+```
