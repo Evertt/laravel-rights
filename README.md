@@ -36,7 +36,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Post extends Model
 {
-    public function scopeOwnedByAuthUser(Builder $builder)
+    public function scopeOwnedByLoggedInUser(Builder $builder)
     {
         $builder->where('user_id', Auth::id());
     }
