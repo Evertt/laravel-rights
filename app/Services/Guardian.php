@@ -72,10 +72,10 @@ class Guardian
         );
     }
 
-    protected function checkRights(User $user, string $action, $model, ?array $attributes)
+    protected function checkRights(?User $user, string $action, $model, ?array $attributes)
     {
         $modelClass = is_string($model) ? $model : get_class($model);
-        $rights = $user->getAllRights()->where('model', $modelClass);
+        $rights = $user ? $user->getAllRights()->where('model', $modelClass);
         $permittedAttributes = $rights->flatMap->$action->unique()->sort();
 
         switch ($action) {
@@ -118,7 +118,7 @@ class Guardian
     protected function getConditions(string $action, EloquentCollection $rights): Collection
     {
         return Cache::tags(['rights', 'conditions'])->rememberForever(
-            'rights:' . implode(',', $rights->modelKeys()),
+            "{$action}_right_conditions:" . implode(',', $rights->modelKeys()),
             fn () => $rights
                 ->loadMissing('conditions')
                 ->sortBy(fn (Right $right) => $right->conditions->count())
@@ -135,9 +135,7 @@ class Guardian
                         }
                     );
 
-                    $result = $result->mergeRecursive($groups->map->all());
-
-                    return $result;
+                    return $result->mergeRecursive($groups->map->all());
                 }, new Collection)
                 ->mapInto(Collection::class)
             );
